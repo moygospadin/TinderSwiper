@@ -5,7 +5,6 @@ import Animated, {
   add,
   multiply,
   neq,
-  spring,
   cond,
   eq,
   event,
@@ -22,39 +21,43 @@ import Animated, {
   concat,
   interpolate,
   Extrapolate,
+  block,
+  Easing,
+  timing,
 } from 'react-native-reanimated';
 
 import Card from './Card';
-
-function runSpring(clock, value, dest) {
+function runTiming(clock, value, dest) {
   const state = {
     finished: new Value(0),
-    velocity: new Value(0),
     position: new Value(0),
+    time: new Value(0),
+    frameTime: new Value(0),
   };
 
   const config = {
-    damping: 20,
-    mass: 1,
-    stiffness: 100,
-    overshootClamping: false,
-    restSpeedThreshold: 1,
-    restDisplacementThreshold: 0.5,
+    duration: 150,
     toValue: new Value(0),
+    easing: Easing.inOut(Easing.ease),
   };
 
-  return [
-    cond(clockRunning(clock), 0, [
-      set(state.finished, 0),
-      set(state.velocity, 0),
-      set(state.position, value),
-      set(config.toValue, dest),
-      startClock(clock),
-    ]),
-    spring(clock, state, config),
+  return block([
+    cond(
+      clockRunning(clock),
+      [set(config.toValue, dest)],
+      [
+        set(state.finished, 0),
+        set(state.time, 0),
+        set(state.position, value),
+        set(state.frameTime, 0),
+        set(config.toValue, dest),
+        startClock(clock),
+      ],
+    ),
+    timing(clock, state, config),
     cond(state.finished, stopClock(clock)),
     state.position,
-  ];
+  ]);
 }
 
 const {width, height} = Dimensions.get('window');
@@ -87,6 +90,7 @@ function Profiles(props) {
   (function init() {
     console.log('init');
     const clockX = new Clock();
+
     gestureState.setValue(State.UNDETERMINED);
     translationX.setValue(0);
     velocityX.setValue(0);
@@ -101,7 +105,7 @@ function Profiles(props) {
     translateX = cond(
       eq(gestureState, State.END),
       [
-        set(translationX, runSpring(clockX, translationX, snapPoint)),
+        set(translationX, runTiming(clockX, translationX, snapPoint)),
         set(offsetX, translationX),
         cond(and(eq(clockRunning(clockX), 0), neq(translationX, 0)), [
           call([translationX], swipped),
@@ -109,7 +113,7 @@ function Profiles(props) {
         translationX,
       ],
       cond(
-        eq(gestureState, State.BEGAN),
+        and(eq(gestureState, State.ACTIVE), clockRunning(clockX)),
         [stopClock(clockX), translationX],
         translationX,
       ),
@@ -143,6 +147,7 @@ function Profiles(props) {
   });
   const style = {
     ...StyleSheet.absoluteFillObject,
+
     zIndex: 900,
     transform: [{translateX}, {rotateZ}],
   };

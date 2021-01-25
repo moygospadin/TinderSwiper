@@ -1,6 +1,6 @@
 import {CONFIRM_LOGIN} from './types';
 const initialState = {
-  isLogin: false,
+  isLogin: true,
 };
 function loginReducer(state = initialState, action) {
   switch (action.type) {
