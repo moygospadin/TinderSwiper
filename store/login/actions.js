@@ -6,7 +6,7 @@ const confirmLogin = (values) => {
   const res = values.password.length !== 0 && checkEmailValid(values.mail);
 
   if (!res) {
-    Alert.alert('Неверный логин или пароль');
+    Alert.alert('Неверный mail или пароль');
   }
   return {type: CONFIRM_LOGIN, data: res};
 };

@@ -18,11 +18,13 @@ function LoginMainScreen({confirmLogin}) {
         <TextInput
           style={styles.textInput}
           value={loginValues.mail}
+          placeholder={'mail'}
           onChangeText={(text) => onChangeTextHandler('mail', text)}
         />
         <TextInput
           style={styles.textInput}
           value={loginValues.password}
+          placeholder={'password'}
           onChangeText={(text) => onChangeTextHandler('password', text)}
         />
         <TouchableOpacity
