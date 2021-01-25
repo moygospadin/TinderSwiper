@@ -1,0 +1,1 @@
+export const CONFIRM_LOGIN = 'CONFIRM_LOGIN';
